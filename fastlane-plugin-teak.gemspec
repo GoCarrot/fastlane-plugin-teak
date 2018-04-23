@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'fastlane-plugin-teak'
   spec.version       = Fastlane::Teak::VERSION
   spec.author        = 'Pat Wilson'
-  spec.email         = 'zerostride@gmail.com'
+  spec.email         = 'pat@teak.io'
 
   spec.summary       = 'Fastlane plugins for the Teak SDK'
   spec.homepage      = "https://github.com/GoCarrot/fastlane-plugin-teak"
