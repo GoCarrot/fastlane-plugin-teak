@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = 'zerostride@gmail.com'
 
   spec.summary       = 'Fastlane plugins for the Teak SDK'
-  # spec.homepage      = "https://github.com/<GITHUB_USERNAME>/fastlane-plugin-teak"
+  spec.homepage      = "https://github.com/GoCarrot/fastlane-plugin-teak"
   spec.license       = "MIT"
 
   spec.files         = Dir["lib/**/*"] + %w(README.md LICENSE)
