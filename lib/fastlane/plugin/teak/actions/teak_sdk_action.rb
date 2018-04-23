@@ -29,9 +29,12 @@ module Fastlane
           FileUtils.cp(File.join(params[:source], teak_sdk[:local_subdirectory], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"), File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"))
         else
           version = params[:version] ? "-#{params[:version]}" : ""
-          unless system("curl --fail -o '#{File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}")}' https://sdks.teakcdn.com/#{params[:sdk].to_s.downcase}/#{teak_sdk[:basename]}#{version}.#{teak_sdk[:extension]}")
-            UI.user_error!("Could not download version #{params[:version]}")
-          end
+
+          Actions.sh("curl", "--fail", "-o", File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"),
+                     "https://sdks.teakcdn.com/#{params[:sdk].to_s.downcase}/#{teak_sdk[:basename]}#{version}.#{teak_sdk[:extension]}",
+                     error_callback: proc do
+                                       UI.user_error!("Could not download version #{params[:version]}")
+                                     end)
         end
       end
 
