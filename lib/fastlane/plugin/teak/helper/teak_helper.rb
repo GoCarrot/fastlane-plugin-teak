@@ -58,6 +58,15 @@ module Fastlane
         # Cleanup temporary keychain
         Actions::DeleteKeychainAction.run(name: keychain_name)
       end
+
+      def self.with_kms_for(file, ciphertext)
+        Dir.mktmpdir do |tmpdir|
+          temp_file = File.join(tmpdir, SecureRandom.hex)
+          Actions.sh("openssl", "enc", "-d", "-aes-256-cbc", "-in", file, "-out", temp_file, "-k",
+                     `aws kms decrypt --ciphertext-blob fileb://#{ciphertext} --output text --query Plaintext | base64 --decode`.force_encoding('BINARY'))
+          yield(temp_file)
+        end
+      end
     end
   end
 end
