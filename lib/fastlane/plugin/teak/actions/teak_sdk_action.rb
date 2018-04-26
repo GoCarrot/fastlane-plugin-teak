@@ -23,23 +23,51 @@ module Fastlane
         FastlaneCore::PrintTable.print_values(config: params, title: "Summary for Teak SDK")
 
         teak_sdk = TEAK_SDKS[params[:sdk].to_s.downcase]
+        out_sdk_path = File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}")
 
         # Copy or Download
         if params[:source]
-          FileUtils.cp(File.join(params[:source], teak_sdk[:local_subdirectory], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"), File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"))
+          FileUtils.cp(File.join(params[:source], teak_sdk[:local_subdirectory], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"), out_sdk_path)
         else
           version = params[:version] ? "-#{params[:version]}" : ""
 
-          Actions.sh("curl", "--fail", "-o", File.join(params[:destination], "#{teak_sdk[:basename]}.#{teak_sdk[:extension]}"),
+          Actions.sh("curl", "--fail", "-o", out_sdk_path,
                      "https://sdks.teakcdn.com/#{params[:sdk].to_s.downcase}/#{teak_sdk[:basename]}#{version}.#{teak_sdk[:extension]}",
                      error_callback: proc do
                                        UI.user_error!("Could not download version #{params[:version]}")
                                      end)
         end
+
+        # Figure out the version of the SDK
+        teak_sdk_version = nil
+        Dir.mktmpdir do |tmpdir|
+          case params[:sdk]
+          when :air
+            require 'nokogiri'
+
+            Actions.sh("unzip", out_sdk_path, "-d", tmpdir, log: false)
+            xml = Nokogiri::XML(File.read(File.join(tmpdir, "META-INF", "ANE", "extension.xml")))
+            teak_sdk_version = xml.at_css('versionNumber').content
+          when :unity
+            Actions.sh("tar", "-xf", out_sdk_path, "-C", tmpdir, log: false)
+            teak_version_dir = Dir.glob("#{tmpdir}/*").find do |f|
+              pathname = File.join(f, "pathname")
+              File.directory?(f) && File.exist?(pathname) && File.read(pathname) == "Assets/Teak/TeakVersion.cs"
+            end
+            teak_sdk_version = File.read(File.join(teak_version_dir, "asset")).match(/return "(.*)"/).captures.first
+          end
+        end
+
+        # Return SDK version
+        teak_sdk_version
       end
 
       def self.description
         "Download the Teak SDK"
+      end
+
+      def self.return_value
+        "The version of the Teak SDK which was downloaded or copied"
       end
 
       def self.authors
