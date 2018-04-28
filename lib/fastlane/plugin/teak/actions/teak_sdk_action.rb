@@ -43,11 +43,8 @@ module Fastlane
         Dir.mktmpdir do |tmpdir|
           case params[:sdk]
           when :air
-            require 'nokogiri'
-
             Actions.sh("unzip", out_sdk_path, "-d", tmpdir, log: false)
-            xml = Nokogiri::XML(File.read(File.join(tmpdir, "META-INF", "ANE", "extension.xml")))
-            teak_sdk_version = xml.at_css('versionNumber').content
+            teak_sdk_version = File.read(File.join(tmpdir, "META-INF", "ANE", "extension.xml")).match(%r[<versionNumber>(.*)<\/versionNumber>]).captures.first
           when :unity
             Actions.sh("tar", "-xf", out_sdk_path, "-C", tmpdir, log: false)
             teak_version_dir = Dir.glob("#{tmpdir}/*").find do |f|
