@@ -42,7 +42,7 @@ module Fastlane
             Actions.sh("cd '#{clone_folder}' && git checkout #{checkout_param} '#{teak_extensions_source_path}'")
 
             # Download the latest Info.plist for TeakNotificationContent
-            Actions.sh("curl", "--fail", "-o", "#{clone_folder}/TeakNotificationContent/Info.plist",
+            Actions.sh("curl", "--fail", "-o", "#{clone_folder}/TeakExtensions/TeakNotificationContent/Info.plist",
                        "https://sdks.teakcdn.com/ios/Info.plist",
                        error_callback: proc do
                                          UI.user_error!("Could not download Info.plist for TeakNotificationContent")
