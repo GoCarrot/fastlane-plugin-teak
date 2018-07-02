@@ -41,6 +41,13 @@ module Fastlane
 
             Actions.sh("cd '#{clone_folder}' && git checkout #{checkout_param} '#{teak_extensions_source_path}'")
 
+            # Download the latest Info.plist for TeakNotificationContent
+            Actions.sh("curl", "--fail", "-o", "#{clone_folder}/TeakNotificationContent/Info.plist",
+                       "https://sdks.teakcdn.com/ios/Info.plist",
+                       error_callback: proc do
+                                         UI.user_error!("Could not download Info.plist for TeakNotificationContent")
+                                       end)
+
             # Reassign teak_extensions_source to be the temp directory
             teak_extensions_source = clone_folder
           end
@@ -52,7 +59,7 @@ module Fastlane
           UI.user_error!("Teak Extensions not found in: #{teak_extensions_source}") unless File.exist?(teak_extensions_source)
 
           # TODO: Ensure the files we need are located in teak_extensions_source
-          Actions.sh("cd '#{teak_extensions_source}' && ls")
+          # Actions.sh("cd '#{teak_extensions_source}' && ls")
 
           # Destination path for copied files
           extension_destination_path = File.dirname(teak_extensions_project_path)
