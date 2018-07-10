@@ -12,7 +12,7 @@ TEAK_SDKS = {
     basename: 'Teak',
     extension: 'unitypackage',
     s3dir: 'unity',
-    local_subdirectory: nil
+    local_subdirectory: ''
   }
 }
 
