@@ -24,7 +24,6 @@ module Fastlane
           name: keychain_name,
           default_keychain: false,
           unlock: true,
-          timeout: 10,
           lock_when_sleeps: true,
           password: SecureRandom.hex
         )
