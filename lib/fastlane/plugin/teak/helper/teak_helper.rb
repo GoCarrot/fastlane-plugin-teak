@@ -18,6 +18,7 @@ module Fastlane
       # Execute a block that will be provided with a path to a p12, a provisioning profile, and a passphrase
       def self.with_credentials_for(app_id, type: 'development')
         keychain_name = SecureRandom.hex
+        keychain_pass = SecureRandom.hex
 
         # Create temporary keychain
         Actions::CreateKeychainAction.run(
@@ -25,7 +26,7 @@ module Fastlane
           default_keychain: false,
           unlock: true,
           lock_when_sleeps: true,
-          password: SecureRandom.hex
+          password: keychain_pass
         )
 
         # Download the certificates
@@ -51,7 +52,7 @@ module Fastlane
                      "-f", "pkcs12", "-P", p12_password, "-o", p12_file, log: false)
 
           # Call block
-          yield(p12_file, p12_password, ENV[provisioning_profile_path_env], keychain_name)
+          yield(p12_file, p12_password, ENV[provisioning_profile_path_env], keychain_name, keychain_pass)
         end
       ensure
         # Cleanup temporary keychain
