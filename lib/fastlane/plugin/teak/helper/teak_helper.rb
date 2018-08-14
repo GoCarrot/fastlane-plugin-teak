@@ -52,7 +52,7 @@ module Fastlane
                      "-f", "pkcs12", "-P", p12_password, "-o", p12_file, log: false)
 
           # Call block
-          yield(p12_file, p12_password, ENV[provisioning_profile_path_env])
+          yield(p12_file, p12_password, ENV[provisioning_profile_path_env], keychain_name)
         end
       ensure
         # Cleanup temporary keychain
