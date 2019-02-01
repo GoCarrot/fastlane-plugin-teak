@@ -14,8 +14,7 @@ module Fastlane
         FastlaneCore::PrintTable.print_values(config: params, title: "Summary for Teak Extensions")
         teak_extensions_project_path = params[:xcodeproj]
         teak_extensions_source = params[:source]
-        teak_extensions_source_path = params[:source_path]
-        teak_extensions_branch = params[:branch]
+        teak_sdk_version = params[:version]
         teak_extensions_team_id = params[:team_id]
         teak_extensions_bundle_identifier = params[:app_identifier]
 
@@ -25,31 +24,36 @@ module Fastlane
         temp_path = nil
         begin
           # Clone Teak Extensions if needed
-          if teak_extensions_source.start_with?("git@", "http")
-            repo_name = teak_extensions_source.split("/").last.split(".").first
-            checkout_param = teak_extensions_branch
+          if teak_extensions_source.start_with?("http")
+            temp_path = Dir.mktmpdir("fl_teak_extensions_download")
 
-            temp_path = Dir.mktmpdir("fl_teak_extensions_clone")
-            clone_folder = File.join(temp_path, repo_name)
+            UI.message("Downloading Teak Extensions (#{teak_extensions_source})...")
 
-            branch_option = "--branch #{teak_extensions_branch}" if teak_extensions_branch != 'HEAD'
-
-            UI.message("Cloning git repo for Teak Extensions (#{teak_extensions_source})...")
-            Actions.sh("GIT_TERMINAL_PROMPT=0 git clone '#{teak_extensions_source}' '#{clone_folder}' --depth 1 -n #{branch_option}")
-
-            # TODO: Versions?
-
-            Actions.sh("cd '#{clone_folder}' && git checkout #{checkout_param} '#{teak_extensions_source_path}'")
-
-            # Download the latest Info.plist for TeakNotificationContent
-            Actions.sh("curl", "--fail", "-o", "#{clone_folder}/TeakExtensions/TeakNotificationContent/Info.plist",
-                       "https://sdks.teakcdn.com/ios/Info.plist",
+            # TeakExtensions.zip
+            teak_extensions = teak_sdk_version ? "TeakExtensions-#{teak_sdk_version}.zip" : "TeakExtensions.zip"
+            Actions.sh("curl", "--fail", "-o", "#{temp_path}/TeakExtensions.zip",
+                       "https://sdks.teakcdn.com/ios/#{teak_extensions}",
                        error_callback: proc do
-                                         UI.user_error!("Could not download Info.plist for TeakNotificationContent")
+                                         UI.user_error!("Could not download #{teak_extensions}")
+                                       end)
+            Dir.chdir(temp_path) do
+              Actions.sh("unzip", "TeakExtensions.zip",
+                         error_callback: proc do
+                                         UI.user_error!("Could not download #{teak_extensions}")
+                                       end)
+              Actions.sh("rm", "TeakExtensions.zip")
+            end
+
+            # Info.plist
+            info_plist = teak_sdk_version ? "Info-#{teak_sdk_version}.plist" : "Info.plist"
+            Actions.sh("curl", "--fail", "-o", "#{temp_path}/TeakExtensions/TeakNotificationContent/Info.plist",
+                       "https://sdks.teakcdn.com/ios/#{info_plist}",
+                       error_callback: proc do
+                                         UI.user_error!("Could not download #{info_plist}")
                                        end)
 
             # Reassign teak_extensions_source to be the temp directory
-            teak_extensions_source = clone_folder
+            teak_extensions_source = temp_path
           end
 
           # Expand path
@@ -139,7 +143,7 @@ module Fastlane
             end
           end
         ensure
-          # Remove temporary directory (from cloning repo) if it exists
+          # Remove temporary directory if it exists
           FileUtils.remove_entry_secure(temp_path) unless temp_path.nil?
         end
 
@@ -172,19 +176,15 @@ module Fastlane
                                        default_value_dynamic: true),
           FastlaneCore::ConfigItem.new(key: :source,
                                        env_name: "FL_TEAK_EXTENSIONS_SOURCE",
-                                       description: "Path to a local checkout of the `teak-ios` repository, or git URL",
+                                       description: "Path to a local checkout of the `teak-ios` repository, or S3 artifacts URL",
                                        default_value: "https://github.com/GoCarrot/teak-ios.git",
                                        optional: true),
-          FastlaneCore::ConfigItem.new(key: :source_path,
-                                       env_name: "FL_TEAK_EXTENSIONS_SOURCE_PATH",
-                                       description: "If `teak_extensions_source` is a git URL, the path to the extensions inside that repository",
-                                       default_value: "TeakExtensions/",
-                                       optional: true),
-          FastlaneCore::ConfigItem.new(key: :branch,
-                                       env_name: "FL_TEAK_EXTENSIONS_SOURCE_BRANCH",
-                                       description: "If `teak_extensions_source` is a git URL, the branch to use in that repository",
-                                       default_value: "HEAD",
-                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :version,
+                                  env_name: "FL_TEAK_SDK_VERSION",
+                               description: "The version of the Teak SDK in use, defaults to latest",
+                             default_value: nil,
+                                  optional: true,
+                                      type: String),
           FastlaneCore::ConfigItem.new(key: :team_id,
                                        env_name: "FL_TEAK_EXTENSIONS_TEAM_ID",
                                        description: "The ID of your Developer Portal team if you're in multiple teams",
