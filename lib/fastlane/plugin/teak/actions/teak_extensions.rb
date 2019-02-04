@@ -14,6 +14,7 @@ module Fastlane
         FastlaneCore::PrintTable.print_values(config: params, title: "Summary for Teak Extensions")
         teak_extensions_project_path = params[:xcodeproj]
         teak_extensions_source = params[:source]
+        teak_extensions_source_path = params[:source_path]
         teak_sdk_version = params[:version]
         teak_extensions_team_id = params[:team_id]
         teak_extensions_bundle_identifier = params[:app_identifier]
@@ -178,6 +179,11 @@ module Fastlane
                                        env_name: "FL_TEAK_EXTENSIONS_SOURCE",
                                        description: "Path to a local checkout of the `teak-ios` repository, or S3 artifacts URL",
                                        default_value: "https://github.com/GoCarrot/teak-ios.git",
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :source_path,
+                                       env_name: "FL_TEAK_EXTENSIONS_SOURCE_PATH",
+                                       description: "If `teak_extensions_source` is a git URL, the path to the extensions inside that repository",
+                                       default_value: "TeakExtensions/",
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :version,
                                   env_name: "FL_TEAK_SDK_VERSION",
