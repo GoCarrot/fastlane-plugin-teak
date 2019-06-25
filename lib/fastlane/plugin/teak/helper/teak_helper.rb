@@ -16,7 +16,7 @@ module Fastlane
       end
 
       # Execute a block that will be provided with a path to a p12, a provisioning profile, and a passphrase
-      def self.with_credentials_for(app_id, type: 'development')
+      def self.with_credentials_for(app_id, type: 'development', match_options = { readonly: true })
         keychain_name = SecureRandom.hex
         keychain_pass = SecureRandom.hex
 
@@ -33,9 +33,8 @@ module Fastlane
         params = FastlaneCore::Configuration.create(Match::Options.available_options, {
           app_identifier: app_id,
           type: type,
-          readonly: true,
           keychain_name: keychain_name
-        })
+        }.merge(match_options))
         Actions::MatchAction.run(params)
 
         # Get the location of the provisioning profile
