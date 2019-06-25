@@ -30,11 +30,12 @@ module Fastlane
         )
 
         # Download the certificates
-        params = FastlaneCore::Configuration.create(Match::Options.available_options, {
+        opts = {
           app_identifier: app_id,
           type: type,
           keychain_name: keychain_name
-        }.merge(match_options))
+        }.merge(match_options)
+        params = FastlaneCore::Configuration.create(Match::Options.available_options, opts)
         Actions::MatchAction.run(params)
 
         # Get the location of the provisioning profile
@@ -47,7 +48,7 @@ module Fastlane
         Dir.mktmpdir do |tmpdir|
           p12_password = SecureRandom.hex
           p12_file = File.join(tmpdir, "temp.p12")
-          Actions.sh("security", "export", "-k", keychain_name, "-t", "identities",
+          Actions.sh("security", "export", "-k", opts[:keychain_name], "-t", "identities",
                      "-f", "pkcs12", "-P", p12_password, "-o", p12_file, log: false)
 
           # Call block
