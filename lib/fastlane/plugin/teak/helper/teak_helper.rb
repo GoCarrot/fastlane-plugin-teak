@@ -16,7 +16,7 @@ module Fastlane
       end
 
       # Execute a block that will be provided with a path to a p12, a provisioning profile, and a passphrase
-      def self.with_credentials_for(app_id, type: 'development', match_options = { readonly: true })
+      def self.with_credentials_for(app_id, type: 'development', match_options: { readonly: true })
         keychain_name = SecureRandom.hex
         keychain_pass = SecureRandom.hex
 
