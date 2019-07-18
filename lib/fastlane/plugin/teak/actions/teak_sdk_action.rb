@@ -103,7 +103,7 @@ module Fastlane
                                   optional: true,
                               verify_block: proc do |value|
                                               UI.user_error!("Directory does not exist (#{value})") unless File.exist?(value)
-                                              UI.user_error!("'Teak.unitypackage' or 'io.teak.sdk.Teak.ane' SDK not found in (#{value})") unless File.exist?(File.join(value, 'Teak.unitypackage')) || File.exist?(File.join(value, 'bin', 'Teak.unitypackage'))
+                                              UI.user_error!("'Teak.unitypackage' or 'io.teak.sdk.Teak.ane' SDK not found in (#{value})") unless File.exist?(File.join(value, 'Teak.unitypackage')) || File.exist?(File.join(value, 'bin', 'io.teak.sdk.Teak.ane'))
                                             end)
         ]
       end
